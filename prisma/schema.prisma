@@ -21,17 +21,17 @@ model User {
 }
 
 model Sheets {
-  id           String  @id @default(uuid())
-  song_title   String
-  song_writter String
-  song_key     String  @db.VarChar(2)
-  content      String? @db.MediumText
-  important    Boolean @default(false)
-  pinned       Boolean @default(false)
+  id          String  @id @default(uuid())
+  song_title  String
+  song_writer String
+  song_key    String  @db.VarChar(2)
+  content     String? @db.MediumText
+  important   Boolean @default(false)
+  pinned      Boolean @default(false)
 }
 
 model Auth_Tokens {
   token   String @unique @db.VarChar(32)
   user_id String @id @unique
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

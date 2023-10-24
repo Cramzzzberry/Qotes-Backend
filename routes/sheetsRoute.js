@@ -10,21 +10,38 @@ const router = express.Router();
 
 // create sheet
 router.post("/create-sheet", async (req, res) => {
-  const { songTitle, songWritter, songKey, important, pinned } = req.body;
-
   await prisma.sheets
     .create({
-      data: {
-        song_title: songTitle,
-        song_writter: songWritter,
-        song_key: songKey,
-        important: important,
-        pinned: pinned,
-      },
+      data: req.body,
     })
     .then(async (sheet) => {
-      res.send(`Sheet created successfully ${sheet.id}`);
+      res.json({
+        success: true,
+      });
     });
+});
+
+// update sheet
+router.put("/update-sheet/:id", async (req, res) => {
+  await prisma.sheets.update({
+    where: {
+      id: req.params.id,
+    },
+
+    data: req.body,
+  });
+  res.send("updating sheet");
+});
+
+// delete sheet
+router.delete("/delete-sheet/:id", async (req, res) => {
+  await prisma.sheets
+    .delete({
+      where: {
+        id: req.params.id,
+      },
+    })
+    .then(() => res.send("Sheet deleted"));
 });
 
 // retrieve sheets
@@ -34,7 +51,7 @@ router.get("/get/all-sheets", async (req, res) => {
       select: {
         id: true,
         song_title: true,
-        song_writter: true,
+        song_writer: true,
         song_key: true,
         important: true,
         pinned: true,
@@ -44,6 +61,49 @@ router.get("/get/all-sheets", async (req, res) => {
       res.json(sheets);
     })
     .catch((err) => res.status(500).send("Internal Server Error"));
+});
+
+router.get("/get/all-sheets/:sheetName", async (req, res) => {
+  await prisma.sheets
+    .findMany({
+      where: {
+        OR: [
+          {
+            song_title: {
+              startsWith: req.params.sheetName,
+            },
+          },
+          {
+            song_title: {
+              endsWith: req.params.sheetName,
+            },
+          },
+          {
+            song_title: {
+              contains: req.params.sheetName,
+            },
+          },
+          {
+            song_writer: {
+              startsWith: req.params.sheetName,
+            },
+          },
+          {
+            song_writer: {
+              endsWith: req.params.sheetName,
+            },
+          },
+          {
+            song_writer: {
+              contains: req.params.sheetName,
+            },
+          },
+        ],
+      },
+    })
+    .then(async (sheets) => {
+      res.json(sheets);
+    });
 });
 
 router.get("/get/pinned-sheets", async (req, res) => {
@@ -55,7 +115,7 @@ router.get("/get/pinned-sheets", async (req, res) => {
       select: {
         id: true,
         song_title: true,
-        song_writter: true,
+        song_writer: true,
         song_key: true,
         important: true,
         pinned: true,
@@ -67,6 +127,55 @@ router.get("/get/pinned-sheets", async (req, res) => {
     .catch((err) => res.status(500).send("Internal Server Error"));
 });
 
+router.get("/get/pinned-sheets/:sheetName", async (req, res) => {
+  await prisma.sheets
+    .findMany({
+      where: {
+        OR: [
+          {
+            song_title: {
+              startsWith: req.params.sheetName,
+            },
+            pinned: true,
+          },
+          {
+            song_title: {
+              endsWith: req.params.sheetName,
+            },
+            pinned: true,
+          },
+          {
+            song_title: {
+              contains: req.params.sheetName,
+            },
+            pinned: true,
+          },
+          {
+            song_writer: {
+              startsWith: req.params.sheetName,
+            },
+            pinned: true,
+          },
+          {
+            song_writer: {
+              endsWith: req.params.sheetName,
+            },
+            pinned: true,
+          },
+          {
+            song_writer: {
+              contains: req.params.sheetName,
+            },
+            pinned: true,
+          },
+        ],
+      },
+    })
+    .then(async (sheets) => {
+      res.json(sheets);
+    });
+});
+
 router.get("/get/important-sheets", async (req, res) => {
   await prisma.sheets
     .findMany({
@@ -76,7 +185,7 @@ router.get("/get/important-sheets", async (req, res) => {
       select: {
         id: true,
         song_title: true,
-        song_writter: true,
+        song_writer: true,
         song_key: true,
         important: true,
         pinned: true,
@@ -86,6 +195,75 @@ router.get("/get/important-sheets", async (req, res) => {
       res.json(sheets);
     })
     .catch((err) => res.status(500).send("Internal Server Error"));
+});
+
+router.get("/get/important-sheets/:sheetName", async (req, res) => {
+  await prisma.sheets
+    .findMany({
+      where: {
+        OR: [
+          {
+            song_title: {
+              startsWith: req.params.sheetName,
+            },
+            important: true,
+          },
+          {
+            song_title: {
+              endsWith: req.params.sheetName,
+            },
+            important: true,
+          },
+          {
+            song_title: {
+              contains: req.params.sheetName,
+            },
+            important: true,
+          },
+          {
+            song_writer: {
+              startsWith: req.params.sheetName,
+            },
+            important: true,
+          },
+          {
+            song_writer: {
+              endsWith: req.params.sheetName,
+            },
+            important: true,
+          },
+          {
+            song_writer: {
+              contains: req.params.sheetName,
+            },
+            important: true,
+          },
+        ],
+      },
+    })
+    .then(async (sheets) => {
+      res.json(sheets);
+    });
+});
+
+//get specific sheet
+router.get("/get/sheet/:id", async (req, res) => {
+  await prisma.sheets
+    .findUnique({
+      where: {
+        id: req.params.id,
+      },
+      select: {
+        song_title: true,
+        song_writer: true,
+        song_key: true,
+        content: true,
+      },
+    })
+    .then((sheet) => {
+      console.log(sheet);
+      res.json(sheet);
+    });
 });
 
 module.exports = router;
