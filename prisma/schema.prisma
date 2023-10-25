@@ -11,13 +11,13 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  email       String       @unique
+  id          String        @id @default(uuid())
+  email       String        @unique
   password    String
   first_name  String?
   last_name   String?
-  approved    Boolean      @default(false)
-  auth_tokens Auth_Tokens?
+  approved    Boolean       @default(false)
+  auth_tokens Auth_Tokens[]
 }
 
 model Sheets {
@@ -31,7 +31,8 @@ model Sheets {
 }
 
 model Auth_Tokens {
-  token   String @unique @db.VarChar(32)
-  user_id String @id @unique
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String @id @default(uuid())
+  token      String @unique @db.VarChar(32)
+  user_email String
+  user       User   @relation(fields: [user_email], references: [email], onDelete: Cascade)
 }
