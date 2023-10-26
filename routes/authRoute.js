@@ -8,25 +8,21 @@ const prisma = new PrismaClient()
 const express = require('express')
 const router = express.Router()
 
+//jwt
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+
 router.post('/', async (req, res) => {
-  await prisma.auth_Tokens
-    .findUnique({
-      where: {
-        token: req.body.token
-      }
+  try {
+    const decoded = jwt.verify(req.get('authorization'), process.env.SECRET_KEY)
+    res.json({
+      authenticated: true
     })
-    .then((authToken) => {
-      if (authToken !== null) {
-        res.json({
-          authenticated: true
-        })
-      } else {
-        res.json({
-          authenticated: false
-        })
-      }
+  } catch (err) {
+    res.json({
+      authenticated: false
     })
-    .catch((err) => console.log(err))
+  }
 })
 
 module.exports = router

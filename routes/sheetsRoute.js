@@ -43,7 +43,6 @@ router.get('/get/:category/:key', async (req, res) => {
   const isPinnedQuery = req.params.category === 'pinned-sheets' ? true : false
   const isImportantQuery = req.params.category === 'important-sheets' ? true : false
 
-  console.log(isImportantQuery)
   if (req.params.category === 'all-sheets') {
     if (req.params.key === 'all-keys') {
       await prisma.sheets
@@ -150,8 +149,6 @@ router.delete('/delete-sheet/:id', async (req, res) => {
 router.get('/search/:category/:key/:sheetName', async (req, res) => {
   const isPinnedQuery = req.params.category === 'pinned-sheets' ? true : false
   const isImportantQuery = req.params.category === 'important-sheets' ? true : false
-
-  console.log(req.params.key)
 
   if (req.params.category === 'all-sheets') {
     if (req.params.key === 'all-keys') {

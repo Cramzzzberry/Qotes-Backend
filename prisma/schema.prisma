@@ -11,13 +11,12 @@ datasource db {
 }
 
 model User {
-  id          String        @id @default(uuid())
-  email       String        @unique
-  password    String
-  first_name  String?
-  last_name   String?
-  approved    Boolean       @default(false)
-  auth_tokens Auth_Tokens[]
+  id         String  @id @default(uuid())
+  email      String  @unique
+  password   String
+  first_name String?
+  last_name  String?
+  approved   Boolean @default(false)
 }
 
 model Sheets {
@@ -28,11 +27,4 @@ model Sheets {
   content     String? @db.MediumText
   important   Boolean @default(false)
   pinned      Boolean @default(false)
-}
-
-model Auth_Tokens {
-  id         String @id @default(uuid())
-  token      String @unique @db.VarChar(32)
-  user_email String
-  user       User   @relation(fields: [user_email], references: [email], onDelete: Cascade)
 }

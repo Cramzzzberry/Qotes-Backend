@@ -8,8 +8,9 @@ const prisma = new PrismaClient()
 const express = require('express')
 const router = express.Router()
 
-// node js
-const crypto = require('crypto')
+//jwt
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
 // create account
 router.post('/create-account', async (req, res) => {
@@ -43,22 +44,13 @@ router.post('/login-account', async (req, res) => {
     .then(async (user) => {
       // if user exists
       if (user !== null) {
-        await prisma.auth_Tokens
-          .create({
-            data: {
-              user_email: user.email,
-              token: crypto.randomBytes(16).toString('hex')
-            }
-          })
-          .then((genAuthToken) => {
-            res.json({
-              success: true,
-              message: 'successfully logged in!',
-              userId: user.id,
-              token: genAuthToken.token
-            })
-          })
-          .catch((err) => console.log(err))
+        const token = jwt.sign(req.body, process.env.SECRET_KEY, { expiresIn: '7d' })
+        res.json({
+          success: true,
+          message: 'successfully logged in!',
+          userId: user.id,
+          token: token
+        })
       } else {
         res.json({
           success: false,
