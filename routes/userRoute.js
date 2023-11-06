@@ -17,7 +17,7 @@ router.post('/create-account', async (req, res) => {
   await prisma.user
     .create({ data: req.body })
     .then(() => {
-      res.json({
+      res.status(200).json({
         success: true,
         message: 'Successfully created an account!'
       })
@@ -45,14 +45,14 @@ router.post('/login-account', async (req, res) => {
       // if user exists
       if (user !== null) {
         const token = jwt.sign(req.body, process.env.SECRET_KEY, { expiresIn: '7d' })
-        res.json({
+        res.status(200).json({
           success: true,
           message: 'successfully logged in!',
           userId: user.id,
           token: token
         })
       } else {
-        res.json({
+        res.status(200).json({
           success: false,
           message: 'Wrong email/password!'
         })
@@ -70,7 +70,7 @@ router.get('/get-user/:id', async (req, res) => {
       }
     })
     .then(async (user) => {
-      res.json(user)
+      res.status(200).json(user)
     })
     .catch((err) => res.status(500).send('Internal Server Error'))
 })
@@ -84,7 +84,7 @@ router.put('/update-account/:id', async (req, res) => {
     data: req.body
   })
 
-  res.send('updating user')
+  res.status(200).send('updating user')
 })
 
 //delete user account
@@ -95,7 +95,7 @@ router.delete('/delete-account/:id', async (req, res) => {
         id: req.params.id
       }
     })
-    .then(() => res.send('Account deleted'))
+    .then(() => res.status(200).send('Account deleted'))
 })
 
 module.exports = router

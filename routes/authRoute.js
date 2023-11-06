@@ -15,11 +15,11 @@ require('dotenv').config()
 router.post('/', async (req, res) => {
   try {
     const decoded = jwt.verify(req.get('authorization'), process.env.SECRET_KEY)
-    res.json({
+    res.status(200).json({
       authenticated: true
     })
   } catch (err) {
-    res.json({
+    res.status(200).json({
       authenticated: false
     })
   }
