@@ -12,7 +12,7 @@ module.exports = function (io) {
   io.on('connection', (socket) => {
     // create sheet
     socket.on('create sheet', async (req) => {
-      await prisma.sheets.create({ data: req }).then(() => socket.broadcast.emit('sheet created'))
+      await prisma.sheets.create({ data: req }).then(() => socket.broadcast.emit('toast', 'A sheet is created.', 4000))
     })
 
     //update sheets
@@ -25,7 +25,7 @@ module.exports = function (io) {
 
           data: req.data
         })
-        .then(() => io.emit('sheets updated'))
+        .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets updated.` : 'A sheet is updated.', 4000))
     })
 
     //delete sheets
@@ -36,7 +36,7 @@ module.exports = function (io) {
             id: { in: req.ids }
           }
         })
-        .then(() => io.emit('sheets deleted'))
+        .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets deleted.` : 'A sheet is deleted.', 4000))
     })
   })
 
