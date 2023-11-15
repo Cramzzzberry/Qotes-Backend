@@ -38,27 +38,36 @@ router.post('/create-account', async (req, res) => {
 router.post('/login-account', async (req, res) => {
   await prisma.user
     .findUnique({
-      where: req.body,
-      select: { email: true, id: true }
+      where: {
+        email: req.body.email
+      },
+      select: { email: true, id: true, password: true }
     })
     .then(async (user) => {
       // if user exists
       if (user !== null) {
-        const token = jwt.sign(req.body, process.env.SECRET_KEY, { expiresIn: '7d' })
-        res.status(200).json({
-          success: true,
-          message: 'successfully logged in!',
-          userId: user.id,
-          token: token
-        })
+        if (req.body.password === user.password) {
+          const token = jwt.sign(req.body, process.env.SECRET_KEY, { expiresIn: '7d' })
+          res.status(200).json({
+            message: 'successfully logged in!',
+            userId: user.id,
+            token: token
+          })
+        } else {
+          res.status(401).json({
+            message: 'Wrong password!'
+          })
+        }
       } else {
-        res.status(200).json({
-          success: false,
-          message: 'Wrong email/password!'
+        res.status(400).json({
+          message: 'Account not existing!'
         })
       }
     })
-    .catch((err) => res.status(500).send('Internal Server Error'))
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send('Internal Server Error')
+    })
 })
 
 //get user details

@@ -23,7 +23,10 @@ module.exports = function (io) {
             id: { in: req.ids }
           },
 
-          data: req.data
+          data: {
+            updatedAt: new Date(),
+            ...req.data
+          }
         })
         .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets updated.` : 'A sheet is updated.', 4000))
     })
@@ -59,124 +62,6 @@ module.exports = function (io) {
       })
   })
 
-  // retrieve sheets
-  router.get('/get/:category/:key', async (req, res) => {
-    if (req.params.category === 'all-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      }
-    } else if (req.params.category === 'pinned-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            where: {
-              pinned: true
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              pinned: true,
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      }
-    } else if (req.params.category === 'important-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            where: {
-              important: true
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              important: true,
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            }
-          })
-          .then(async (sheets) => {
-            res.json(sheets)
-          })
-      }
-    }
-  })
-
   // update sheet
   router.put('/update-sheet/:id', async (req, res) => {
     await prisma.sheets.update({
@@ -184,186 +69,150 @@ module.exports = function (io) {
         id: req.params.id
       },
 
-      data: req.body
+      data: {
+        updatedAt: new Date(),
+        ...req.body
+      }
     })
     res.status(200).send('updated sheet')
   })
 
   // search sheets
-  router.get('/search/:category/:key/:sheetName', async (req, res) => {
+  router.post('/search/', async (req, res) => {
     const searchFor = [
       {
         song_title: {
-          startsWith: req.params.sheetName
+          startsWith: req.body.searchInput
         }
       },
       {
         song_title: {
-          endsWith: req.params.sheetName
+          endsWith: req.body.searchInput
         }
       },
       {
         song_title: {
-          contains: req.params.sheetName
+          contains: req.body.searchInput
         }
       },
       {
         song_writer: {
-          startsWith: req.params.sheetName
+          startsWith: req.body.searchInput
         }
       },
       {
         song_writer: {
-          endsWith: req.params.sheetName
+          endsWith: req.body.searchInput
         }
       },
       {
         song_writer: {
-          contains: req.params.sheetName
+          contains: req.body.searchInput
         }
       }
     ]
 
-    if (req.params.category === 'all-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
+    await prisma.sheets
+      .findMany({
+        ...(req.body.last_id
+          ? {
+              cursor: {
+                id: req.body.last_id
+              }
             }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor,
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
+          : {}),
+        ...(req.body.last_id ? { skip: 1 } : {}),
+        take: 39,
+        where: {
+          OR: searchFor,
+          ...(req.body.key !== 'all-keys'
+            ? {
+                song_key: req.body.key
+              }
+            : {}),
+          ...(req.body.tag === 'pinned-sheets'
+            ? {
+                pinned: true
+              }
+            : req.body.tag === 'important-sheets'
+            ? {
+                important: true
+              }
+            : {})
+        },
+        select: {
+          id: true,
+          song_title: true,
+          song_writer: true,
+          song_key: true,
+          important: true,
+          pinned: true
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      })
+      .then(async (sheets) => {
+        res.status(200).json(sheets)
+      })
+  })
+
+  // retrieve sheets: this is used when the searchbar is empty
+  router.post('/get/sheets', async (req, res) => {
+    await prisma.sheets
+      .findMany({
+        ...(req.body.last_id
+          ? {
+              cursor: {
+                id: req.body.last_id
+              }
             }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      }
-    } else if (req.params.category === 'pinned-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor,
-              pinned: true
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
+          : {}),
+        ...(req.body.last_id ? { skip: 1 } : {}),
+        ...(req.body.key !== 'all-keys'
+          ? {
+              where: {
+                song_key: req.body.key,
+                ...(req.body.tag === 'pinned-sheets'
+                  ? {
+                      pinned: true
+                    }
+                  : req.body.tag === 'important-sheets'
+                  ? {
+                      important: true
+                    }
+                  : {})
+              }
             }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor,
-              pinned: true,
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
-            }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      }
-    } else if (req.params.category === 'important-sheets') {
-      if (req.params.key === 'all-keys') {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor,
-              important: true
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
-            }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      } else {
-        await prisma.sheets
-          .findMany({
-            where: {
-              OR: searchFor,
-              important: true,
-              song_key: req.params.key
-            },
-            select: {
-              id: true,
-              song_title: true,
-              song_writer: true,
-              song_key: true,
-              important: true,
-              pinned: true
-            },
-            orderBy: {
-              song_title: 'asc'
-            }
-          })
-          .then(async (sheets) => {
-            res.status(200).json(sheets)
-          })
-      }
-    }
+          : {
+              where: {
+                ...(req.body.tag === 'pinned-sheets'
+                  ? {
+                      pinned: true
+                    }
+                  : req.body.tag === 'important-sheets'
+                  ? {
+                      important: true
+                    }
+                  : {})
+              }
+            }),
+        take: 39,
+        select: {
+          id: true,
+          song_title: true,
+          song_writer: true,
+          song_key: true,
+          important: true,
+          pinned: true
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      })
+      .then(async (sheets) => {
+        res.json(sheets)
+      })
   })
 
   return router
