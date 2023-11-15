@@ -20,13 +20,13 @@ model User {
 }
 
 model Sheets {
-  id          String   @id @default(uuid())
-  song_title  String
-  song_writer String
-  song_key    String   @db.VarChar(2)
-  content     String?  @db.MediumText
-  important   Boolean  @default(false)
-  pinned      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  song_title String
+  artist     String
+  song_key   String   @db.VarChar(2)
+  content    String?  @db.MediumText
+  important  Boolean  @default(false)
+  pinned     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
 }

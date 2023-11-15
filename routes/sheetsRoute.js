@@ -52,7 +52,7 @@ module.exports = function (io) {
         },
         select: {
           song_title: true,
-          song_writer: true,
+          artist: true,
           song_key: true,
           content: true
         }
@@ -96,17 +96,17 @@ module.exports = function (io) {
         }
       },
       {
-        song_writer: {
+        artist: {
           startsWith: req.body.searchInput
         }
       },
       {
-        song_writer: {
+        artist: {
           endsWith: req.body.searchInput
         }
       },
       {
-        song_writer: {
+        artist: {
           contains: req.body.searchInput
         }
       }
@@ -143,7 +143,7 @@ module.exports = function (io) {
         select: {
           id: true,
           song_title: true,
-          song_writer: true,
+          artist: true,
           song_key: true,
           important: true,
           pinned: true
@@ -201,7 +201,7 @@ module.exports = function (io) {
         select: {
           id: true,
           song_title: true,
-          song_writer: true,
+          artist: true,
           song_key: true,
           important: true,
           pinned: true
