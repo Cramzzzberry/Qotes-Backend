@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -24,7 +24,7 @@ model Sheets {
   song_title String
   artist     String
   song_key   String   @db.VarChar(2)
-  content    String?  @db.MediumText
+  content    String?  @db.Text
   important  Boolean  @default(false)
   pinned     Boolean  @default(false)
   createdAt  DateTime @default(now())
