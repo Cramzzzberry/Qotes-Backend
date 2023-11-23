@@ -1,16 +1,10 @@
-// dont forget that you need to respond to a request so that app will not crash in general
-
-// prisma
-const { PrismaClient, Prisma } = require('@prisma/client')
-const prisma = new PrismaClient()
-
-// expressjs
 const express = require('express')
-const router = express.Router()
-
-//jwt
+const { PrismaClient, Prisma } = require('@prisma/client')
 const jwt = require('jsonwebtoken')
-require('dotenv').config()
+
+const router = express.Router()
+const prisma = new PrismaClient()
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 
 // create account
 router.post('/create-account', async (req, res) => {

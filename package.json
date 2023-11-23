@@ -13,9 +13,12 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js",
+    "serve:dev": "set NODE_ENV=development && dotenv -e .env.development nodemon app.js",
+    "serve:prod": "set NODE_ENV=production && dotenv -e .env.production nodemon app.js",
+    "migrate:dev": "dotenv -e .env.development npx prisma migrate dev",
+    "migrate:prod": "dotenv -e .env.production npx prisma migrate dev",
     "generate": "npx prisma generate",
-    "migrate": "npx prisma migrate dev"
+    "studio": "dotenv -e .env.development npx prisma studio"
   },
   "keywords": [],
   "author": "",

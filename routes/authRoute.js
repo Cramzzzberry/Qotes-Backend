@@ -10,7 +10,7 @@ const router = express.Router()
 
 //jwt
 const jwt = require('jsonwebtoken')
-require('dotenv').config()
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 
 router.post('/', async (req, res) => {
   try {
