@@ -19,6 +19,7 @@
     "migrate:prod": "dotenv -e .env.production npx prisma migrate dev",
     "generate": "npx prisma generate",
     "studio": "dotenv -e .env.development npx prisma studio"
+    "studio": "dotenv -e .env.development npx prisma studio"
   },
   "keywords": [],
   "author": "",
