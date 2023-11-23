@@ -21,6 +21,10 @@ app.use('/users', userRoute)
 app.use('/sheets', sheetsRoute)
 app.use('/auth', authRoute)
 
+app.get('/', (req, res) => {
+  res.send('hello world')
+})
+
 server.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
