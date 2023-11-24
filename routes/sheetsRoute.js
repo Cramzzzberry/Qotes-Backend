@@ -82,32 +82,38 @@ module.exports = function (io) {
     const searchFor = [
       {
         song_title: {
-          startsWith: req.body.searchInput
+          startsWith: req.body.searchInput,
+          mode: 'insensitive'
         }
       },
       {
         song_title: {
-          endsWith: req.body.searchInput
+          endsWith: req.body.searchInput,
+          mode: 'insensitive'
         }
       },
       {
         song_title: {
-          contains: req.body.searchInput
+          contains: req.body.searchInput,
+          mode: 'insensitive'
         }
       },
       {
         artist: {
-          startsWith: req.body.searchInput
+          startsWith: req.body.searchInput,
+          mode: 'insensitive'
         }
       },
       {
         artist: {
-          endsWith: req.body.searchInput
+          endsWith: req.body.searchInput,
+          mode: 'insensitive'
         }
       },
       {
         artist: {
-          contains: req.body.searchInput
+          contains: req.body.searchInput,
+          mode: 'insensitive'
         }
       }
     ]
@@ -125,7 +131,7 @@ module.exports = function (io) {
         take: 39,
         where: {
           OR: searchFor,
-          ...(req.body.key !== 'all-keys'
+          ...(req.body.key !== 'All Keys'
             ? {
                 song_key: req.body.key
               }
@@ -169,7 +175,7 @@ module.exports = function (io) {
             }
           : {}),
         ...(req.body.last_id ? { skip: 1 } : {}),
-        ...(req.body.key !== 'all-keys'
+        ...(req.body.key !== 'All Keys'
           ? {
               where: {
                 song_key: req.body.key,
