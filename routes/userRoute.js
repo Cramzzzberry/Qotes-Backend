@@ -1,6 +1,6 @@
 const express = require('express')
 const { PrismaClient, Prisma } = require('@prisma/client')
-const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -20,11 +20,11 @@ router.post('/create-account', async (req, res) => {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2002') {
           console.log('There is a unique constraint violation, a new user cannot be created with this email')
+          res.status(409).send(err)
         }
+      } else {
+        res.status(500).send(err)
       }
-      res.status(500).json({
-        message: 'Internal Server Error'
-      })
     })
 })
 
@@ -41,12 +41,23 @@ router.post('/login-account', async (req, res) => {
       // if user exists
       if (user !== null) {
         if (req.body.password === user.password) {
-          const token = jwt.sign(req.body, process.env.SECRET_KEY, { expiresIn: '7d' })
-          res.status(200).json({
-            message: 'successfully logged in!',
-            userId: user.id,
-            token: token
-          })
+          const token = crypto.randomBytes(64).toString('hex')
+
+          await prisma.tokens
+            .create({
+              data: {
+                userId: user.id,
+                token: token
+              }
+            })
+            .then(() => {
+              res.status(200).json({
+                message: 'successfully logged in!',
+                userId: user.id,
+                token: token
+              })
+            })
+            .catch((err) => res.status(500).send(err))
         } else {
           res.status(401).json({
             message: 'Wrong password!'
@@ -58,10 +69,19 @@ router.post('/login-account', async (req, res) => {
         })
       }
     })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).send('Internal Server Error')
+    .catch((err) => res.status(500).send(err))
+})
+
+//delete token on logout
+router.delete('/logout-account', async (req, res) => {
+  await prisma.tokens
+    .delete({
+      where: {
+        token: req.get('Authorization').split(' ')[1]
+      }
     })
+    .then(() => res.status(200).send('token deleted'))
+    .catch((err) => res.status(400).send(err))
 })
 
 //get user details
@@ -72,20 +92,20 @@ router.get('/get-user/:id', async (req, res) => {
         id: req.params.id
       }
     })
-    .then(async (user) => {
-      res.status(200).json(user)
-    })
-    .catch((err) => res.status(500).send('Internal Server Error'))
+    .then((user) => res.status(200).json(user))
+    .catch((err) => res.status(500).send(err))
 })
 
 //update user account
 router.put('/update-account/:id', async (req, res) => {
-  await prisma.user.update({
-    where: {
-      id: req.params.id
-    },
-    data: req.body
-  })
+  await prisma.user
+    .update({
+      where: {
+        id: req.params.id
+      },
+      data: req.body
+    })
+    .catch((err) => res.status(500).send(err))
 
   res.status(200).send('updating user')
 })
@@ -99,6 +119,7 @@ router.delete('/delete-account/:id', async (req, res) => {
       }
     })
     .then(() => res.status(200).send('Account deleted'))
+    .catch((err) => res.status(500).send(err))
 })
 
 module.exports = router

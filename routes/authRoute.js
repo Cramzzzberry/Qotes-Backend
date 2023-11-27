@@ -1,27 +1,29 @@
-// dont forget that you need to respond to a request so that app will not crash in general
-
-// prisma
-const { PrismaClient, Prisma } = require('@prisma/client')
-const prisma = new PrismaClient()
-
-// expressjs
 const express = require('express')
-const router = express.Router()
-
-//jwt
-const jwt = require('jsonwebtoken')
+const { PrismaClient, Prisma } = require('@prisma/client')
 require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 
+const router = express.Router()
+const prisma = new PrismaClient()
+
 router.post('/', async (req, res) => {
-  try {
-    const decoded = jwt.verify(req.get('authorization'), process.env.SECRET_KEY)
-    res.status(200).json({
-      authenticated: true
-    })
-  } catch (err) {
-    res.status(200).json({
-      authenticated: false
-    })
+  if (req.body.userId !== undefined || req.get('Authorization').split(' ')[1] !== undefined) {
+    await prisma.tokens
+      .findFirst({
+        where: {
+          userId: req.body.userId,
+          token: req.get('Authorization').split(' ')[1]
+        }
+      })
+      .then((token) => {
+        if (token) {
+          res.status(200).send('Account is authenticated')
+        } else {
+          res.status(401).send('Account is unauthenticated')
+        }
+      })
+      .catch((err) => res.status(500).send(err))
+  } else {
+    res.status(401).send('Account is unauthenticated')
   }
 })
 

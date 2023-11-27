@@ -12,7 +12,10 @@ module.exports = function (io) {
   io.on('connection', (socket) => {
     // create sheet
     socket.on('create sheet', async (req) => {
-      await prisma.sheets.create({ data: req }).then(() => socket.broadcast.emit('toast', 'A sheet is created.', 4000))
+      await prisma.sheets
+        .create({ data: req })
+        .then(() => socket.broadcast.emit('toast', 'A sheet is created.', 4000))
+        .catch((err) => res.status(500).send(err))
     })
 
     //update sheets
@@ -29,6 +32,7 @@ module.exports = function (io) {
           }
         })
         .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets updated.` : 'A sheet is updated.', 4000))
+        .catch((err) => res.status(500).send(err))
     })
 
     //delete sheets
@@ -40,6 +44,7 @@ module.exports = function (io) {
           }
         })
         .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets deleted.` : 'A sheet is deleted.', 4000))
+        .catch((err) => res.status(500).send(err))
     })
   })
 
@@ -57,24 +62,25 @@ module.exports = function (io) {
           content: true
         }
       })
-      .then((sheet) => {
-        res.status(200).json(sheet)
-      })
+      .then((sheet) => res.status(200).json(sheet))
+      .catch((err) => res.status(500).send(err))
   })
 
   // update sheet
   router.put('/update-sheet/:id', async (req, res) => {
-    await prisma.sheets.update({
-      where: {
-        id: req.params.id
-      },
+    await prisma.sheets
+      .update({
+        where: {
+          id: req.params.id
+        },
 
-      data: {
-        updatedAt: new Date(),
-        ...req.body
-      }
-    })
-    res.status(200).send('updated sheet')
+        data: {
+          updatedAt: new Date(),
+          ...req.body
+        }
+      })
+      .then(() => res.status(200).send('Sheet updated'))
+      .catch((err) => res.status(500).send(err))
   })
 
   // search sheets
@@ -158,9 +164,10 @@ module.exports = function (io) {
           updatedAt: 'desc'
         }
       })
-      .then(async (sheets) => {
+      .then((sheets) => {
         res.status(200).json(sheets)
       })
+      .catch((err) => res.status(500).send(err))
   })
 
   // retrieve sheets: this is used when the searchbar is empty
@@ -216,9 +223,10 @@ module.exports = function (io) {
           updatedAt: 'desc'
         }
       })
-      .then(async (sheets) => {
+      .then((sheets) => {
         res.json(sheets)
       })
+      .catch((err) => res.status(500).send(err))
   })
 
   return router

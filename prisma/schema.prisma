@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id         String  @id @default(uuid())
-  email      String  @unique
+  id         String   @id @default(uuid())
+  email      String   @unique
   password   String
   first_name String?
   last_name  String?
-  approved   Boolean @default(false)
+  approved   Boolean  @default(false)
+  tokens     Tokens[]
 }
 
 model Sheets {
@@ -29,4 +30,11 @@ model Sheets {
   pinned     Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
+}
+
+model Tokens {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
