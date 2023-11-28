@@ -35,29 +35,35 @@ router.post('/login-account', async (req, res) => {
       where: {
         email: req.body.email
       },
-      select: { email: true, id: true, password: true }
+      select: { email: true, id: true, password: true, approved: true }
     })
     .then(async (user) => {
       // if user exists
       if (user !== null) {
         if (req.body.password === user.password) {
-          const token = crypto.randomBytes(64).toString('hex')
+          if (user.approved) {
+            const token = crypto.randomBytes(64).toString('hex')
 
-          await prisma.tokens
-            .create({
-              data: {
-                userId: user.id,
-                token: token
-              }
-            })
-            .then(() => {
-              res.status(200).json({
-                message: 'successfully logged in!',
-                userId: user.id,
-                token: token
+            await prisma.tokens
+              .create({
+                data: {
+                  userId: user.id,
+                  token: token
+                }
               })
+              .then(() => {
+                res.status(200).json({
+                  message: 'successfully logged in!',
+                  userId: user.id,
+                  token: token
+                })
+              })
+              .catch((err) => res.status(500).send(err))
+          } else {
+            res.status(401).json({
+              message: 'Account not yet approved.'
             })
-            .catch((err) => res.status(500).send(err))
+          }
         } else {
           res.status(401).json({
             message: 'Wrong password!'
