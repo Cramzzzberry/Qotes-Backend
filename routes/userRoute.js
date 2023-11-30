@@ -1,6 +1,8 @@
 const express = require('express')
 const { PrismaClient, Prisma } = require('@prisma/client')
 const crypto = require('crypto')
+const bcrypt = require('bcrypt')
+const saltRounds = 10
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -8,24 +10,33 @@ require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 
 // create account
 router.post('/create-account', async (req, res) => {
-  await prisma.user
-    .create({ data: req.body })
-    .then(() => {
-      res.status(200).json({
-        success: true,
-        message: 'Successfully created an account!'
-      })
-    })
-    .catch((err) => {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2002') {
-          console.log('There is a unique constraint violation, a new user cannot be created with this email')
-          res.status(409).send(err)
+  bcrypt.hash(req.body.password, saltRounds).then(async (hash) => {
+    await prisma.user
+      .create({
+        data: {
+          email: req.body.email,
+          password: hash,
+          first_name: req.body.first_name,
+          last_name: req.body.last_name
         }
-      } else {
-        res.status(500).send(err)
-      }
-    })
+      })
+      .then(() => {
+        res.status(200).json({
+          success: true,
+          message: 'Successfully created an account!'
+        })
+      })
+      .catch((err) => {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === 'P2002') {
+            console.log('There is a unique constraint violation, a new user cannot be created with this email')
+            res.status(409).send(err)
+          }
+        } else {
+          res.status(500).send(err)
+        }
+      })
+  })
 })
 
 //log account
@@ -35,40 +46,42 @@ router.post('/login-account', async (req, res) => {
       where: {
         email: req.body.email
       },
-      select: { email: true, id: true, password: true, approved: true }
+      select: { id: true, password: true, approved: true }
     })
     .then(async (user) => {
-      // if user exists
       if (user !== null) {
-        if (req.body.password === user.password) {
-          if (user.approved) {
-            const token = crypto.randomBytes(64).toString('hex')
+        // if user exists
+        bcrypt.compare(req.body.password, user.password).then(async (result) => {
+          if (result) {
+            if (user.approved) {
+              const token = crypto.randomBytes(64).toString('hex')
 
-            await prisma.tokens
-              .create({
-                data: {
-                  userId: user.id,
-                  token: token
-                }
-              })
-              .then(() => {
-                res.status(200).json({
-                  message: 'successfully logged in!',
-                  userId: user.id,
-                  token: token
+              await prisma.tokens
+                .create({
+                  data: {
+                    userId: user.id,
+                    token: token
+                  }
                 })
+                .then(() => {
+                  res.status(200).json({
+                    message: 'successfully logged in!',
+                    userId: user.id,
+                    token: token
+                  })
+                })
+                .catch((err) => res.status(500).send(err))
+            } else {
+              res.status(401).json({
+                message: 'Account not yet approved.'
               })
-              .catch((err) => res.status(500).send(err))
+            }
           } else {
             res.status(401).json({
-              message: 'Account not yet approved.'
+              message: 'Wrong password!'
             })
           }
-        } else {
-          res.status(401).json({
-            message: 'Wrong password!'
-          })
-        }
+        })
       } else {
         res.status(400).json({
           message: 'Account not existing!'
