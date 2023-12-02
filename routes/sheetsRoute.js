@@ -142,9 +142,9 @@ module.exports = function (io) {
                 song_key: req.body.key
               }
             : {}),
-          ...(req.body.tag === 'pinned-sheets'
+          ...(req.body.tag === 'lineup'
             ? {
-                pinned: true
+                lineup: true
               }
             : req.body.tag === 'important-sheets'
             ? {
@@ -158,7 +158,7 @@ module.exports = function (io) {
           artist: true,
           song_key: true,
           important: true,
-          pinned: true
+          lineup: true
         },
         orderBy: {
           updatedAt: 'desc'
@@ -186,9 +186,9 @@ module.exports = function (io) {
           ? {
               where: {
                 song_key: req.body.key,
-                ...(req.body.tag === 'pinned-sheets'
+                ...(req.body.tag === 'lineup'
                   ? {
-                      pinned: true
+                      lineup: true
                     }
                   : req.body.tag === 'important-sheets'
                   ? {
@@ -199,9 +199,9 @@ module.exports = function (io) {
             }
           : {
               where: {
-                ...(req.body.tag === 'pinned-sheets'
+                ...(req.body.tag === 'lineup'
                   ? {
-                      pinned: true
+                      lineup: true
                     }
                   : req.body.tag === 'important-sheets'
                   ? {
@@ -217,7 +217,7 @@ module.exports = function (io) {
           artist: true,
           song_key: true,
           important: true,
-          pinned: true
+          lineup: true
         },
         orderBy: {
           updatedAt: 'desc'
