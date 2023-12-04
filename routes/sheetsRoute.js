@@ -226,7 +226,7 @@ module.exports = function (io) {
       .then((sheets) => {
         res.status(200).json(sheets)
       })
-      .catch((err) => res.send(err))
+      .catch((err) => res.status(500).send(err.code))
   })
 
   return router
