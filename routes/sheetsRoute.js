@@ -15,7 +15,10 @@ module.exports = function (io) {
       await prisma.sheets
         .create({ data: req })
         .then(() => socket.broadcast.emit('toast', 'A sheet is created.', 4000))
-        .catch((err) => console.log(err))
+        .catch((err) => {
+          console.log(err)
+          console.log(req)
+        })
     })
 
     //update sheets
