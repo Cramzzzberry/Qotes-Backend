@@ -15,10 +15,7 @@ module.exports = function (io) {
       await prisma.sheets
         .create({ data: req })
         .then(() => socket.broadcast.emit('toast', 'A sheet is created.', 4000))
-        .catch((err) => {
-          console.log(err)
-          console.log(req)
-        })
+        .catch((err) => console.log(err))
     })
 
     //update sheets
@@ -35,7 +32,7 @@ module.exports = function (io) {
           }
         })
         .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets updated.` : 'A sheet is updated.', 4000))
-        .catch((err) => res.status(500).send(err))
+        .catch((err) => console.log(err))
     })
 
     //delete sheets
@@ -47,7 +44,7 @@ module.exports = function (io) {
           }
         })
         .then(() => socket.broadcast.emit('toast', req.ids.length > 1 ? `(${req.ids.length}) sheets deleted.` : 'A sheet is deleted.', 4000))
-        .catch((err) => res.status(500).send(err))
+        .catch((err) => console.log(err))
     })
   })
 
@@ -229,7 +226,10 @@ module.exports = function (io) {
       .then((sheets) => {
         res.status(200).json(sheets)
       })
-      .catch((err) => res.status(500).send(err))
+      .catch((err) => {
+        console.log(err)
+        res.status(500).send(err)
+      })
   })
 
   return router
