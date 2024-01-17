@@ -25,9 +25,8 @@ app.use(
   })
 )
 app.use(express.json())
-app.use('/users', userRoute)
-app.use('/sheets', sheetsRoute)
-app.use('/auth', authRoute)
+app.use('/api/v1/user', userRoute)
+app.use('/api/v1/sheets', sheetsRoute)
 
 app.get('/', (req, res) => {
   res.send('hello world')
