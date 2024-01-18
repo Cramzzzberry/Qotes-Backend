@@ -15,7 +15,7 @@ const deleteToken = require('../middlewares').deleteToken
 
 //signup
 router.post('/', async (req, res) => {
-  bcrypt.hash(req.body.password, saltRounds).then(async (hash) => {
+  bcrypt.hash(req.body.password, saltRounds).then(async hash => {
     await prisma.user
       .create({
         data: {
@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
       .then(() => {
         res.status(200).send('Successfully created an account!')
       })
-      .catch((err) => {
+      .catch(err => {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           res.status(409).send('A user with this email already exists')
         } else {
@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
 //login
 router.get('/', findUser, (req, res) => {
   if (req.user) {
-    bcrypt.compare(req.body.password, req.user.password).then(async (result) => {
+    bcrypt.compare(req.body.password, req.user.password).then(async result => {
       if (result) {
         if (req.user.approved) {
           const token = crypto.randomBytes(64).toString('hex')
@@ -59,7 +59,7 @@ router.get('/', findUser, (req, res) => {
                 token: token
               })
             })
-            .catch((err) => res.status(500).send(err))
+            .catch(err => res.status(500).send(err))
         } else {
           res.status(401).send('Account not yet approved')
         }
@@ -86,8 +86,8 @@ router.get('/:id', auth, async (req, res) => {
         last_name: true
       }
     })
-    .then((user) => res.status(200).send(user))
-    .catch((err) => res.status(500).send(err))
+    .then(user => res.status(200).send(user))
+    .catch(err => res.status(500).send(err))
 })
 
 //update account
@@ -100,7 +100,7 @@ router.put('/:id', auth, async (req, res) => {
       data: req.body
     })
     .then(() => res.status(200).send('User updated'))
-    .catch((err) => res.status(500).send(err))
+    .catch(err => res.status(500).send(err))
 })
 
 //delete account
@@ -112,7 +112,7 @@ router.delete('/:id', auth, deleteToken, async (req, res) => {
       }
     })
     .then(() => res.status(200).send('Account deleted'))
-    .catch((err) => res.status(500).send(err))
+    .catch(err => res.status(500).send(err))
 })
 
 module.exports = router
