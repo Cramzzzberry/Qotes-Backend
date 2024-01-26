@@ -14,7 +14,7 @@ const findUser = require('../middlewares').findUser
 const deleteToken = require('../middlewares').deleteToken
 
 //signup
-router.post('/', async (req, res) => {
+router.post('/signup', async (req, res) => {
   bcrypt.hash(req.body.password, saltRounds).then(async hash => {
     await prisma.user
       .create({
@@ -32,14 +32,14 @@ router.post('/', async (req, res) => {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           res.status(409).send('A user with this email already exists')
         } else {
-          res.status(500).send(err)
+          res.status(500).send('Internal server error')
         }
       })
   })
 })
 
 //login
-router.get('/', findUser, (req, res) => {
+router.post('/login', findUser, (req, res) => {
   if (req.user) {
     bcrypt.compare(req.body.password, req.user.password).then(async result => {
       if (result) {
@@ -55,11 +55,11 @@ router.get('/', findUser, (req, res) => {
             })
             .then(() => {
               res.status(200).send({
-                userId: req.user.id,
+                userID: req.user.id,
                 token: token
               })
             })
-            .catch(err => res.status(500).send(err))
+            .catch(() => res.status(500).send('Internal server error'))
         } else {
           res.status(401).send('Account not yet approved')
         }
@@ -68,7 +68,7 @@ router.get('/', findUser, (req, res) => {
       }
     })
   } else {
-    res.status(400).send('Account not existing')
+    res.status(400).send("Account doesn't exist")
   }
 })
 
@@ -87,7 +87,7 @@ router.get('/:id', auth, async (req, res) => {
       }
     })
     .then(user => res.status(200).send(user))
-    .catch(err => res.status(500).send(err))
+    .catch(() => res.status(500).send('Internal server error'))
 })
 
 //update account
@@ -100,7 +100,7 @@ router.put('/:id', auth, async (req, res) => {
       data: req.body
     })
     .then(() => res.status(200).send('User updated'))
-    .catch(err => res.status(500).send(err))
+    .catch(() => res.status(500).send('Internal server error'))
 })
 
 //delete account
@@ -112,7 +112,7 @@ router.delete('/:id', auth, deleteToken, async (req, res) => {
       }
     })
     .then(() => res.status(200).send('Account deleted'))
-    .catch(err => res.status(500).send(err))
+    .catch(() => res.status(500).send('Internal server error'))
 })
 
 module.exports = router

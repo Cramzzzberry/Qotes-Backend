@@ -51,37 +51,37 @@ router.get('/search/:category', auth, async (req, res) => {
     OR: [
       {
         song_title: {
-          startsWith: req.body.search,
+          startsWith: req.query.search,
           mode: 'insensitive'
         }
       },
       {
         song_title: {
-          endsWith: req.body.search,
+          endsWith: req.query.search,
           mode: 'insensitive'
         }
       },
       {
         song_title: {
-          contains: req.body.search,
+          contains: req.query.search,
           mode: 'insensitive'
         }
       },
       {
         artist: {
-          startsWith: req.body.search,
+          startsWith: req.query.search,
           mode: 'insensitive'
         }
       },
       {
         artist: {
-          endsWith: req.body.search,
+          endsWith: req.query.search,
           mode: 'insensitive'
         }
       },
       {
         artist: {
-          contains: req.body.search,
+          contains: req.query.search,
           mode: 'insensitive'
         }
       }
@@ -90,11 +90,11 @@ router.get('/search/:category', auth, async (req, res) => {
 
   await prisma.sheets
     .findMany({
-      ...(req.body.lastId
+      ...(req.query.lastId
         ? {
             skip: 1,
             cursor: {
-              id: req.body.lastId
+              id: req.query.lastId
             }
           }
         : {}),
@@ -110,9 +110,9 @@ router.get('/search/:category', auth, async (req, res) => {
               important: true
             }
           : {}),
-        ...(req.body.key !== 'All Keys'
+        ...(req.query.key !== 'All Keys'
           ? {
-              song_key: req.body.key
+              song_key: req.query.key
             }
           : {})
       },
@@ -141,8 +141,6 @@ router.get('/search/:category', auth, async (req, res) => {
           lineup: sheet.lineup
         })
       })
-
-      console.log(sheets)
 
       res.status(200).send(sheets)
     })

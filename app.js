@@ -8,7 +8,6 @@ require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 //routes
 const userRoute = require('./routes/userRoute')
 const sheetsRoute = require('./routes/sheetsRoute')
-const authRoute = require('./routes/authRoute')
 
 app.use(
   cors({
