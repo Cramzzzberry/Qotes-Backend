@@ -148,7 +148,7 @@ router.get('/search/:category', auth, async (req, res) => {
 })
 
 //update sheets
-router.put('/', auth, async req => {
+router.put('/', auth, async (req, res) => {
   await prisma.sheets
     .updateMany({
       where: {
@@ -157,7 +157,7 @@ router.put('/', auth, async req => {
 
       data: {
         updatedAt: new Date(),
-        ...req.data
+        ...req.body.data
       }
     })
     .then(() => res.status(200).send(req.body.ids.length > 1 ? `(${req.ids.length}) sheets updated` : 'Sheet updated successfully'))
