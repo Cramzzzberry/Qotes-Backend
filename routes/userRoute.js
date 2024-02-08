@@ -80,13 +80,18 @@ router.get('/:id', auth, async (req, res) => {
         id: req.params.id
       },
       select: {
-        id: true,
         email: true,
         first_name: true,
         last_name: true
       }
     })
-    .then(user => res.status(200).send(user))
+    .then(user =>
+      res.status(200).send({
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name
+      })
+    )
     .catch(() => res.status(500).send('Internal server error'))
 })
 
@@ -101,6 +106,18 @@ router.put('/:id', auth, async (req, res) => {
     })
     .then(() => res.status(200).send('User updated'))
     .catch(() => res.status(500).send('Internal server error'))
+})
+
+//delete token on logout
+router.delete('/', auth, async (req, res) => {
+  await prisma.tokens
+    .delete({
+      where: {
+        token: req.headers.authorization.split(' ')[1]
+      }
+    })
+    .then(() => res.status(200).send('token deleted'))
+    .catch(err => res.status(500).send('Internal server error'))
 })
 
 //delete account

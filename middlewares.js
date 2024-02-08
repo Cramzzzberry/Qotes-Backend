@@ -2,11 +2,10 @@ const { PrismaClient, Prisma } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 exports.auth = async function (req, res, next) {
-  if (req.headers.userid !== undefined && req.headers.authorization !== undefined) {
+  if (req.headers.authorization !== undefined) {
     await prisma.tokens
-      .findFirst({
+      .findUnique({
         where: {
-          userId: req.headers.userid,
           token: req.headers.authorization.split(' ')[1]
         }
       })
@@ -42,7 +41,7 @@ exports.deleteToken = async function (req, res, next) {
   await prisma.tokens
     .delete({
       where: {
-        token: req.headers.authorization
+        token: req.headers.authorization.split(' ')[1]
       }
     })
     .then(() => next())
