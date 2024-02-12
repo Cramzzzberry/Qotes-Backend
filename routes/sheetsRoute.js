@@ -22,44 +22,6 @@ router.post('/', auth, async (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-//get lineup sheets
-router.get('/lineup', auth, async (req, res) => {
-  await prisma.sheets
-    .findMany({
-      where: {
-        lineup: true
-      },
-      select: {
-        id: true,
-        song_title: true,
-        artist: true,
-        song_key: true,
-        content: true,
-        lineup: true
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      }
-    })
-    .then(data => {
-      let sheets = []
-
-      data.forEach(sheet => {
-        sheets.push({
-          id: sheet.id,
-          songTitle: sheet.song_title,
-          artist: sheet.artist,
-          songKey: sheet.song_key,
-          content: sheet.content,
-          lineup: sheet.lineup
-        })
-      })
-
-      res.status(200).send(sheets)
-    })
-    .catch(err => res.status(500).send(err))
-})
-
 //search sheets
 router.get('/search/:category', auth, async (req, res) => {
   const search = {
@@ -162,6 +124,44 @@ router.get('/search/:category', auth, async (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
+//get lineup sheets
+router.get('/lineup', auth, async (req, res) => {
+  await prisma.sheets
+    .findMany({
+      where: {
+        lineup: true
+      },
+      select: {
+        id: true,
+        song_title: true,
+        artist: true,
+        song_key: true,
+        content: true,
+        lineup: true
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    })
+    .then(data => {
+      let sheets = []
+
+      data.forEach(sheet => {
+        sheets.push({
+          id: sheet.id,
+          songTitle: sheet.song_title,
+          artist: sheet.artist,
+          songKey: sheet.song_key,
+          content: sheet.content,
+          lineup: sheet.lineup
+        })
+      })
+
+      res.status(200).send(sheets)
+    })
+    .catch(err => res.status(500).send(err))
+})
+
 //get sheet
 router.get('/:id', auth, async (req, res) => {
   await prisma.sheets
@@ -198,7 +198,7 @@ router.put('/', auth, async (req, res) => {
         ...req.body.data
       }
     })
-    .then(() => res.status(200).send(req.body.ids.length > 1 ? `(${req.body.ids.length}) sheets updated` : 'Sheet updated successfully'))
+    .then(() => res.status(200).send(req.body.ids.length > 1 ? `${req.body.ids.length} sheets updated` : 'Sheet updated'))
     .catch(err => res.status(500).send(err))
 })
 
@@ -227,7 +227,7 @@ router.delete('/', auth, async (req, res) => {
         id: { in: req.body.ids }
       }
     })
-    .then(() => res.status(200).send(req.body.ids.length > 1 ? `(${req.body.ids.length}) sheets deleted` : 'Sheet deleted successfully'))
+    .then(() => res.status(200).send(req.body.ids.length > 1 ? `${req.body.ids.length} sheets deleted` : 'Sheet deleted'))
     .catch(err => {
       console.log(err)
       res.status(500).send(err)
